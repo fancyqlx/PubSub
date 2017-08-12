@@ -3,6 +3,15 @@
 
 
 #include "socketx.hpp"
+#include <unordered_map>
+#include <set>
+
+using socketx::Message;
+using socketx::Connection;
+using std::cout;
+using std::endl;
+using std::string;
+using std::cin;
 
 /*
 * protocol class described the message format
@@ -14,17 +23,27 @@
 */
 
 
-class protocol{
-    public:
+class Protocol{
+    private:
         size_t cmd_size; 
         size_t theme_size;
         size_t msg_size;
         std::string cmd_;
         std::string theme_;
         std::string msg_;
+    public:
+        std::string getCmd(){
+            return cmd_;
+        }
+        std::string getTheme(){
+            return theme_;
+        }
+        std::string getMsg(){
+            return msg_;
+        }
 
-        protocol()=default;
-        protocol(std::string cmd, std::string theme, std::string msg);
+        Protocol()=default;
+        Protocol(std::string cmd, std::string theme, std::string msg);
 
         size_t getBytesLength();
         Message serialization();

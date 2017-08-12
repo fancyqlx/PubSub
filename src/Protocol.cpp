@@ -1,31 +1,31 @@
-#include "protocol.hpp"
+#include "Protocol.hpp"
 
 
-protocol::protocol(std::string cmd, std::string theme="", std::string msg="")
+Protocol::Protocol(std::string cmd, std::string theme="", std::string msg="")
     :cmd_(cmd), theme_(theme), msg_(msg),
     cmd_size(cmd.size()),
     theme_size(theme.size()),
-    msg_size(msg,size()){
+    msg_size(msg.size()){
 
 }
 
-size_t protocol::getBytesLength(){
+size_t Protocol::getBytesLength(){
     return sizeof(size_t) * 3 + cmd_size + 1 + theme_size + 1 + msg_size + 1;
 }
 
-Message protocol::serialization(){
+Message Protocol::serialization(){
     size_t n = getBytesLength();
     char * ret = new char[n];
     char * p = ret;
 
     /*Copy cmd_size to the bytes array*/
-    memcpy(p,cmd_size,sizeof(size_t));
+    memcpy(p,&cmd_size,sizeof(size_t));
     p += sizeof(size_t);
     /*Copy theme_size to the bytes array*/
-    memcpy(p,theme_size,sizeof(size_t));
+    memcpy(p,&theme_size,sizeof(size_t));
     p += sizeof(size_t);
     /*Copy msg_size to the bytes array*/
-    memcpy(p,msg_size,sizeof(size_t));
+    memcpy(p,&msg_size,sizeof(size_t));
     p += sizeof(size_t);
 
     /*Copy cmd*/
@@ -45,7 +45,7 @@ Message protocol::serialization(){
     return Message(ret,n);
 }
 
-void protocol::deserialization(const Message &msg){
+void Protocol::deserialization(const Message &msg){
     int n = msg.getSize();
     const char * data = msg.getData();
     size_t count = 0;

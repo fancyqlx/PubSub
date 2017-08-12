@@ -9,19 +9,21 @@ CFLAGS += -I$(DIR_LIB)/src -std=c++11 -pthread -L$(DIR_LIB)/libs -lsocketx -g
 
 SRC_OBJ = $(patsubst %.cpp, %.o, ${SRC})
 
-all: client miner server
+OBJ = ${DIR_SRC}/PubSub.o ${DIR_SRC}/Publisher.o ${DIR_SRC}/Subscriber.o ${DIR_SRC}/Protocol.o
 
-client: ${DIR_SRC}/client.o ${DIR_SRC}/header.o 
-	g++ ${DIR_SRC}/client.o ${DIR_SRC}/header.o $(CFLAGS) -o ${DIR_SRC}/client
+all: PubSubSys PublisherClient SubscriberClient
 
-miner: ${DIR_SRC}/miner.o ${DIR_SRC}/header.o 
-	g++ ${DIR_SRC}/miner.o ${DIR_SRC}/header.o $(CFLAGS) -o ${DIR_SRC}/miner
+PubSubSys: $(SRC_OBJ)
+	g++ ${DIR_SRC}/PubSubSys.o $(OBJ) $(CFLAGS) -o ${DIR_SRC}/PubSubSys
 
-server: ${DIR_SRC}/server.o ${DIR_SRC}/header.o
-	g++ ${DIR_SRC}/server.o ${DIR_SRC}/header.o $(CFLAGS) -o ${DIR_SRC}/server
+PublisherClient: $(SRC_OBJ)
+	g++ ${DIR_SRC}/PublisherClient.o $(OBJ) $(CFLAGS) -o ${DIR_SRC}/PublisherClient
+
+SubscriberClient: $(SRC_OBJ)
+	g++ ${DIR_SRC}/SubscriberClient.o $(OBJ) $(CFLAGS) -o ${DIR_SRC}/SubscriberClient
 
 ${DIR_SRC}/%.o:$(DIR_SRC)/%.cpp
 	g++ $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(SRC_OBJ) $(DIR_SRC)/client $(DIR_SRC)/miner $(DIR_SRC)/server
+	rm -f $(SRC_OBJ) $(DIR_SRC)/PubSubSys $(DIR_SRC)/PublisherClient $(DIR_SRC)/SubscriberClient

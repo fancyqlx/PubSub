@@ -15,6 +15,7 @@ class Subscriber{
         void filter(const Message &msg);
         void printer(const std::string &theme, const std::string &msg);
 
+        void regist();
         void subscribe(std::string theme);
         void unsubscribe(std::string theme);
 

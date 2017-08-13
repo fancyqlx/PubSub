@@ -18,10 +18,14 @@ class SubscriberClient{
             printf("New connection comes, we are going to set read events!!!\n");
             client_->setHandleReadEvents(std::bind(&SubscriberClient::handleReadEvents, this, std::placeholders::_1));
             subscriber_ = std::make_shared<Subscriber>(conn);
+            subscriber_->regist();
         }
         void handleReadEvents(std::shared_ptr<socketx::Connection> conn){
             socketx::Message msg = conn->recvmsg();
-            if(msg.getSize()==0) conn->handleClose();
+            if(msg.getSize()==0){
+                conn->handleClose();
+                return;
+            }
             subscriber_->filter(msg);
         }
         void handleCloseEvents(std::shared_ptr<socketx::Connection> conn){

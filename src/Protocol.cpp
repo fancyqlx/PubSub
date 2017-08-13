@@ -34,13 +34,12 @@ Message Protocol::serialization(){
     p += cmd_size+1;
     /*Copy theme*/
     const char * s2 = theme_.c_str();
-    memcpy(p,s1,theme_size+1);
+    memcpy(p,s2,theme_size+1);
     p += theme_size+1;
     /*Copy msg*/
     const char * s3 = msg_.c_str();
-    memcpy(p,s1,theme_size+1);
+    memcpy(p,s3,theme_size+1);
     p += theme_size+1;
-    delete s1; delete s2; delete s3;
     
     return Message(ret,n);
 }
@@ -75,7 +74,10 @@ void Protocol::deserialization(const Message &msg){
         data += cmd_size+1;
         count += cmd_size+1;
     }
-    delete s;
+    if(s!=nullptr){
+        delete s;
+        s = nullptr;
+    }
     if(count < n){
         s = new char[theme_size+1];
         memcpy(s,data,theme_size+1);
@@ -83,7 +85,10 @@ void Protocol::deserialization(const Message &msg){
         data += theme_size+1;
         count += theme_size+1;
     }
-    delete s;
+    if(s!=nullptr){
+        delete s;
+        s = nullptr;
+    }
     if(count < n){
         s = new char[msg_size+1];
         memcpy(s,data,msg_size+1);
@@ -91,5 +96,8 @@ void Protocol::deserialization(const Message &msg){
         data += msg_size+1;
         count += msg_size+1;
     }
-    delete s;
+    if(s!=nullptr){
+        delete s;
+        s = nullptr;
+    }
 }

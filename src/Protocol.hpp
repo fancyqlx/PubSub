@@ -19,7 +19,7 @@ using std::cin;
 * deserialized by the following format:
 * ||cmd_size||theme_size||msg_size||cmd||theme||msg||
 * The commands includes:
-* sub, pub, unsub, unpub, broadcast
+* sub, pub, unsub, unpub, broadcast, regist
 */
 
 

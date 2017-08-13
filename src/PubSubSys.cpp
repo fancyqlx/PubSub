@@ -19,12 +19,14 @@ class PubSubSys{
         }
         void handleReadEvents(std::shared_ptr<socketx::Connection> conn){
             socketx::Message msg = conn->recvmsg();
-            if(msg.getSize()==0) conn->handleClose();
+            if(msg.getSize()==0){
+                conn->handleClose();
+                return;
+            }
             pubsub_->filter(conn,msg);
         }
         void handleCloseEvents(std::shared_ptr<socketx::Connection> conn){
             printf("Close connection...\n");
-            loop_->quit();
         }
 
     private:

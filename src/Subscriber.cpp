@@ -2,7 +2,7 @@
 
 bool Subscriber::isSubscribed(std::string theme){
     auto it = std::find(themeList.begin(),themeList.end(),theme);
-    if(it!=themeList.end())
+    if(it==themeList.end())
         return false;
     return true;
 }
@@ -16,11 +16,12 @@ void Subscriber::filter(const Message &msg){
     Protocol pro;
     pro.deserialization(msg);
     std::string cmd = pro.getCmd();
+    printf("Received a message of command cmd %s.\n",cmd.c_str());
     if(cmd=="broadcast"){
         std::string theme = pro.getTheme();
         if(isSubscribed(theme)) return;
         else{
-            printf("Subscribe Theme %s <Y/N> ?\n",theme.c_str());
+            printf("Subscribe Theme %s <Y/N> ?:",theme.c_str());
             std::string str;
             cin>>str;
             if(str=="Y") subscribe(theme);
@@ -32,6 +33,13 @@ void Subscriber::filter(const Message &msg){
         printer(theme,msg);
     }
 }
+
+void Subscriber::regist(){
+    Protocol pro("regist","","");
+    socketx::Message msg = pro.serialization();
+    conn_->sendmsg(msg);
+}
+
 
 void Subscriber::subscribe(std::string theme){
     if(isSubscribed(theme)){

@@ -4,7 +4,8 @@ void PubSub::filter(std::shared_ptr<Connection> conn, const Message &msg){
     Protocol pro;
     pro.deserialization(msg);
     std::string cmd = pro.getCmd();
-    if(cmd=="sub" || cmd=="unsub")
+    printf("Received a message of command cmd %s.\n",cmd.c_str());
+    if(cmd=="sub" || cmd=="unsub" || cmd=="regist")
         subscriberStub(conn,msg);
     else
         publisherStub(conn,msg);
@@ -17,7 +18,9 @@ void PubSub::subscriberStub(std::shared_ptr<Connection> conn, const Message &msg
         subscribe(conn,pro.getTheme());
     else if(pro.getCmd()=="unsub"){
         unsubscribe(conn,pro.getTheme());
-    }else{
+    }else if(pro.getCmd()=="regist")
+        regist(conn);
+    else{
         printf("subscriberStub: no such command...\n");
     }
 }
@@ -36,22 +39,30 @@ void PubSub::publisherStub(std::shared_ptr<Connection> conn, const Message &msg)
 }
 
 
-void PubSub::subscribe(std::shared_ptr<Connection> conn, std::string theme){
+void PubSub::regist(std::shared_ptr<Connection> conn){
+    if(!subscriberMap.count(conn)){
+        subscriberMap[conn] = std::set<std::string>();
+        printf("A subscriber registed...\n");
+    }
+}
+
+void PubSub::subscribe(std::shared_ptr<Connection> conn, const std::string &theme){
     if(subscriberMap.count(conn)){
         subscriberMap[conn].insert(theme);
     }else{
         subscriberMap[conn] = std::set<std::string>();
+        subscriberMap[conn].insert(theme);
     }
-    
     
     if(queueMap.count(theme)){
         queueMap[theme]->addConnection(conn);
     }else{
         queueMap.insert({theme,std::make_shared<socketx::MessageQueue>()});
     }
+    printf("Subscriber %d subscribes theme %s.\n", conn->getFD(), theme.c_str());
 }
 
-void PubSub::unsubscribe(std::shared_ptr<Connection> conn, std::string theme){
+void PubSub::unsubscribe(std::shared_ptr<Connection> conn, const std::string &theme){
     if(subscriberMap.count(conn)){
         subscriberMap[conn].erase(theme);
     }else{
@@ -68,7 +79,6 @@ void PubSub::unsubscribe(std::shared_ptr<Connection> conn, std::string theme){
 void PubSub::publish(const std::string &theme, const Message &msg){
    if(!queueMap.count(theme)){
         broadcast(theme);
-
         queueMap.insert({theme,std::make_shared<socketx::MessageQueue>()});
         if(pool.getIdleThreadNum()==0) pool.addThread();
         pool.submit(std::bind(&PubSub::publishMsg, this, theme));
@@ -76,7 +86,7 @@ void PubSub::publish(const std::string &theme, const Message &msg){
     queueMap[theme]->recv(msg);
 }
 
-void PubSub::unpublish(std::shared_ptr<Connection> conn, std::string theme){
+void PubSub::unpublish(std::shared_ptr<Connection> conn, const std::string &theme){
     if(themeMap.count(theme)){
         auto it = std::find(themeMap[theme].begin(),themeMap[theme].end(),conn);
         if(it==themeMap[theme].end()){
@@ -104,7 +114,7 @@ void PubSub::checker(){
 
 }
 
-void PubSub::publishMsg(std::string theme){
+void PubSub::publishMsg(const std::string &theme){
     while(!queueMap[theme]->empty()){
         queueMap[theme]->send();
     }
